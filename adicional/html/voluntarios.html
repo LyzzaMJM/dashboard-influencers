@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Evaluación con Bonus</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+
+body{
+
+    font-family:'Segoe UI', Arial, sans-serif;
+
+    background:
+    linear-gradient(135deg,#ecfdf5,#d1fae5,#a7f3d0);
+
+    padding:30px;
+
+    min-height:100vh;
+
+}
+
+
+
+/* TARJETA PRINCIPAL */
+
+.container{
+
+    max-width:700px;
+
+    margin:40px auto;
+
+    background:#ffffff;
+
+    padding:35px;
+
+    border-radius:25px;
+
+    box-shadow:
+    0 15px 35px rgba(16,185,129,0.18);
+
+    border:1px solid #d1fae5;
+
+}
+
+
+
+/* TITULO */
+
+h2{
+
+    text-align:center;
+
+    color:#065f46;
+
+    font-size:30px;
+
+    font-weight:800;
+
+    margin-bottom:30px;
+
+}
+
+
+
+h3{
+
+    color:#064e3b;
+
+}
+
+
+
+h4{
+
+    text-align:center;
+
+    font-size:21px;
+
+}
+
+
+
+/* INPUTS */
+
+input{
+
+    width:100%;
+
+    padding:15px 18px;
+
+    margin:12px 0;
+
+    border-radius:14px;
+
+    border:2px solid #d1fae5;
+
+    background:#f0fdf4;
+
+    color:#065f46;
+
+    font-size:16px;
+
+    outline:none;
+
+    transition:.3s;
+
+}
+
+
+
+input::placeholder{
+
+    color:#6b7280;
+
+}
+
+
+
+input:focus{
+
+    border-color:#10b981;
+
+    background:white;
+
+    box-shadow:
+    0 0 12px rgba(16,185,129,.25);
+
+}
+
+
+
+/* BOTONES */
+
+button{
+
+    width:100%;
+
+    padding:15px;
+
+    margin-top:15px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:
+
+    linear-gradient(
+        135deg,
+        #10b981,
+        #059669
+    );
+
+    color:white;
+
+    font-size:17px;
+
+    font-weight:700;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+    box-shadow:
+    0 6px 15px rgba(5,150,105,.25);
+
+}
+
+
+
+button:hover{
+
+    transform:translateY(-3px);
+
+    background:
+
+    linear-gradient(
+        135deg,
+        #059669,
+        #047857
+    );
+
+    box-shadow:
+    0 10px 20px rgba(5,150,105,.35);
+
+}
+
+
+
+/* BOTON REGRESAR */
+
+.btn-back{
+
+    background:
+
+    linear-gradient(
+        135deg,
+        #065f46,
+        #047857
+    );
+
+    margin-bottom:20px;
+
+}
+
+
+
+.btn-back:hover{
+
+    background:
+
+    linear-gradient(
+        135deg,
+        #064e3b,
+        #065f46
+    );
+
+}
+
+
+
+/* RESULTADO */
+
+.result{
+
+    margin-top:35px;
+
+    background:
+
+    linear-gradient(
+        135deg,
+        #f0fdf4,
+        #ecfdf5
+    );
+
+    padding:25px;
+
+    border-radius:20px;
+
+    border:2px solid #bbf7d0;
+
+}
+
+
+
+/* FILAS */
+
+.row{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:15px 5px;
+
+    border-bottom:1px solid #bbf7d0;
+
+    font-size:16px;
+
+}
+
+
+
+.row:last-child{
+
+    border-bottom:none;
+
+}
+
+
+
+.row span{
+
+    color:#065f46;
+
+    font-weight:600;
+
+}
+
+
+
+.row b{
+
+    color:#059669;
+
+    font-size:18px;
+
+}
+
+
+
+/* TOTAL FINAL */
+
+.result h3:last-of-type{
+
+    text-align:center;
+
+    color:white;
+
+    background:
+
+    linear-gradient(
+        135deg,
+        #059669,
+        #047857
+    );
+
+    padding:18px;
+
+    border-radius:16px;
+
+    margin-top:25px;
+
+    font-size:24px;
+
+    box-shadow:
+
+    0 8px 20px rgba(5,150,105,.3);
+
+}
+
+
+
+/* ESTADO */
+
+.result h4{
+
+    background:#dcfce7;
+
+    color:#166534;
+
+    padding:14px;
+
+    border-radius:12px;
+
+}
+
+
+
+/* LINEA */
+
+hr{
+
+    border:none;
+
+    height:2px;
+
+    background:#bbf7d0;
+
+    margin:25px 0;
+
+}
+
+
+
+/* ANIMACION ENTRADA */
+
+.container{
+
+    animation:
+
+    aparecer .5s ease;
+
+}
+
+
+
+@keyframes aparecer{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(20px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+
+
+/* RESPONSIVE */
+
+@media(max-width:600px){
+
+    body{
+
+        padding:15px;
+
+    }
+
+
+    .container{
+
+        padding:22px;
+
+        margin:20px auto;
+
+    }
+
+
+    h2{
+
+        font-size:24px;
+
+    }
+
+
+    .row{
+
+        font-size:14px;
+
+    }
+
+}
+
+
+</style>
+
+
+</head>
+
+<body>
+
+<div class="container">
+
+<button class="btn-back" onclick="window.location.href='/dashboard-influencers.html'">
+    ← Regresar al Dashboard
+</button>
+
+<h2>Evaluación Semanal + Bonus</h2>
+
+<input type="text" id="nombre" placeholder="Voluntario">
+<input type="number" id="contactos" placeholder="Contactos">
+<input type="number" id="meta" value="400">
+
+<button onclick="calcular()">Calcular</button>
+
+<div class="result" id="resultado" style="display:none;"></div>
+
+
+
+</div>
+
+
+<script>
+
+function calcular(){
+
+    const nombre = document.getElementById("nombre").value;
+    const contactos = Number(document.getElementById("contactos").value);
+    const meta = Number(document.getElementById("meta").value);
+
+    if(!nombre || !contactos || !meta){
+        alert("Completa todo");
+        return;
+    }
+
+    let porcentaje = (contactos / meta) * 100;
+    if(porcentaje > 100) porcentaje = 100;
+
+    // base (1–20)
+    let base = Math.round((porcentaje / 100) * 75); // escala sobre 75
+
+    // BONUS FIJO
+    let bonus = 5;
+
+    let total = base + bonus;
+
+    // tope lógico (máximo 80)
+    if(total > 80) total = 80;
+
+    let q1 = Math.max(10, Math.round(porcentaje));
+    let q2 = Math.round((porcentaje / 100) * 20);
+    let q3 = Math.round((porcentaje / 100) * 20);
+    let q4 = Math.round((porcentaje / 100) * 20);
+
+    document.getElementById("resultado").style.display = "block";
+
+    document.getElementById("resultado").innerHTML = `
+
+        <h3>${nombre}</h3>
+
+        <div class="row">
+            <span>📊 % cumplimiento</span>
+            <b>${q1}%</b>
+        </div>
+
+        <div class="row">
+            <span>📌 Pregunta 1</span>
+            <b>${q2}</b>
+        </div>
+
+        <div class="row">
+            <span>📌 Pregunta 2</span>
+            <b>${q3}</b>
+        </div>
+
+        <div class="row">
+            <span>📌 Pregunta 3</span>
+            <b>${q4}</b>
+        </div>
+
+        <div class="row">
+            <span>🎁 Bonus fijo</span>
+            <b>+${bonus}</b>
+        </div>
+
+        <hr>
+
+        <h3>Total final: ${total}/80</h3>
+
+        <h4>
+            ${
+                total >= 65 ? "🟢 Alto rendimiento"
+                : total >= 45 ? "🟡 Medio rendimiento"
+                : "🔴 Bajo rendimiento"
+            }
+        </h4>
+
+    `;
+}
+
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel de Gestión de Voluntarios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/adicional/css/styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    </div>
+    <div class="brand-text">
+      <span class="brand-name">VolunteerOS</span>
+      <span class="brand-sub">Panel Administrativo</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="#" class="nav-item active" data-section="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="#" class="nav-item" data-section="calendar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span>Calendario Notion</span>
+    </a>
+    <a href="#" class="nav-item" data-section="discipline">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>Disciplina</span>
+    </a>
+    <a href="#" class="nav-item" data-section="schedules">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span>Horarios</span>
+    </a>
+    <a href="#" class="nav-item" data-section="productivity">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span>Productividad</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="status-dot"></div>
+    <span>Sistema activo</span>
+  </div>
+</aside>
+
+<!-- ═══════════════════ MAIN ═══════════════════ -->
+<main class="main-content">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="page-title">
+        <h1 id="pageTitle">Dashboard General</h1>
+        <p id="pageDate"></p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-ghost" id="btnRecalculate" title="Recalcular métricas">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        <span>Recalcular</span>
+      </button>
+      <button class="btn btn-ghost" id="btnSyncNotion" title="Sync con Notion">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+        <span>Sync Notion</span>
+      </button>
+      <button class="btn btn-primary" id="btnUpdateAll">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-7"/></svg>
+        <span>Actualizar Todo</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ═══ SECTION: DASHBOARD ═══ -->
+  <section class="section active" id="section-dashboard">
+
+    <!-- GLOBAL ALERTS BANNER -->
+    <div class="alerts-banner" id="alertsBanner"></div>
+
+    <!-- GLOBAL METRICS -->
+    <div class="metrics-grid">
+      <div class="metric-card metric-green">
+        <div class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="metric-body">
+          <span class="metric-label">Productividad Hoy</span>
+          <span class="metric-value" id="metricToday">—</span>
+          <span class="metric-sub" id="metricTodayPct">contactos totales</span>
+        </div>
+      </div>
+      <div class="metric-card metric-blue">
+        <div class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div class="metric-body">
+          <span class="metric-label">Productividad Semanal</span>
+          <span class="metric-value" id="metricWeek">—</span>
+          <span class="metric-sub" id="metricWeekPct">de 2,000 meta</span>
+        </div>
+      </div>
+      <div class="metric-card metric-purple">
+        <div class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+        </div>
+        <div class="metric-body">
+          <span class="metric-label">Productividad Mensual</span>
+          <span class="metric-value" id="metricMonth">—</span>
+          <span class="metric-sub" id="metricMonthPct">contactos este mes</span>
+        </div>
+      </div>
+      <div class="metric-card metric-red">
+        <div class="metric-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <div class="metric-body">
+          <span class="metric-label">Alertas Activas</span>
+          <span class="metric-value" id="metricAlerts">—</span>
+          <span class="metric-sub">requieren atención</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- VOLUNTEER CARDS -->
+    <div class="section-header">
+      <h2>Estado de Voluntarios</h2>
+      <span class="badge-count" id="volunteerCount">5 voluntarios</span>
+    </div>
+    <div class="volunteer-cards" id="volunteerCards"></div>
+
+    <!-- CHARTS ROW -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Ranking de Productividad</h3>
+          <span class="chart-sub">Contactos totales acumulados</span>
+        </div>
+        <div class="chart-wrap"><canvas id="chartRanking"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <h3>Cumplimiento de Metas</h3>
+          <span class="chart-sub">% respecto a meta diaria (80)</span>
+        </div>
+        <div class="chart-wrap"><canvas id="chartGoals"></canvas></div>
+      </div>
+    </div>
+
+    <!-- DISCIPLINE OVERVIEW -->
+    <div class="section-header">
+      <h2>Resumen Disciplinario</h2>
+    </div>
+    <div class="discipline-overview" id="disciplineOverview"></div>
+
+  </section>
+
+  <!-- ═══ SECTION: CALENDAR ═══ -->
+  <section class="section" id="section-calendar">
+    <div class="cal-toolbar">
+      <div class="cal-nav">
+        <button class="btn btn-ghost btn-icon" id="calPrev">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h2 id="calMonthTitle"></h2>
+        <button class="btn btn-ghost btn-icon" id="calNext">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+      <div class="cal-legend">
+        <span class="leg-item leg-green">Actividad</span>
+        <span class="leg-item leg-red">Pendiente</span>
+        <span class="leg-item leg-gray">Sin eventos</span>
+        <span class="leg-item leg-blue">Hoy</span>
+      </div>
+      <div class="cal-actions">
+        <div class="notion-config">
+          <input type="text" id="notionToken" placeholder="Notion Integration Token" class="input-token" />
+          <input type="text" id="notionDbId" placeholder="Database ID" class="input-token" />
+        </div>
+        <button class="btn btn-primary btn-sm" id="btnSyncNotionCal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+          Sync Notion
+        </button>
+      </div>
+    </div>
+
+    <div class="cal-grid-wrap">
+      <div class="cal-weekdays">
+        <div>Dom</div><div>Lun</div><div>Mar</div><div>Mié</div>
+        <div>Jue</div><div>Vie</div><div>Sáb</div>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
+
+    <!-- Event detail panel -->
+    <div class="event-panel" id="eventPanel">
+      <div class="event-panel-header">
+        <h3 id="eventPanelDate">Selecciona un día</h3>
+        <button class="btn btn-ghost btn-icon btn-sm" id="eventPanelClose">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="event-list" id="eventList">
+        <p class="event-empty">Haz clic en un día del calendario para ver sus eventos.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SECTION: DISCIPLINE ═══ -->
+  <section class="section" id="section-discipline">
+    <div class="section-header">
+      <h2>Sistema de Amonestaciones</h2>
+      <button class="btn btn-ghost btn-sm" id="btnAddSanction">+ Registrar Evento</button>
+    </div>
+
+    <div class="discipline-cards" id="disciplineCards"></div>
+
+    <div class="section-header" style="margin-top:2rem;">
+      <h2>Historial de Faltas</h2>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" id="sanctionTable">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Voluntario</th>
+            <th>Tipo</th>
+            <th>Motivo</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody id="sanctionTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Add Sanction Modal -->
+    <div class="modal-overlay" id="sanctionModal">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Registrar Evento Disciplinario</h3>
+          <button class="btn btn-ghost btn-icon btn-sm" id="closeSanctionModal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Voluntario</label>
+            <select id="modalVolunteer" class="form-select">
+              <option value="">Seleccionar...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Tipo de Amonestación</label>
+            <select id="modalType" class="form-select">
+              <option value="roja">🔴 Roja – Falta grave (0 registros)</option>
+              <option value="amarilla">🟡 Amarilla – Baja actividad (1–30%)</option>
+              <option value="verde">🟢 Verde – Meta cumplida (≥80%)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Fecha</label>
+            <input type="date" id="modalDate" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label>Motivo / Nota</label>
+            <textarea id="modalNote" class="form-textarea" rows="3" placeholder="Describe el motivo..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" id="cancelSanctionModal">Cancelar</button>
+          <button class="btn btn-primary" id="saveSanction">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SECTION: SCHEDULES ═══ -->
+  <section class="section" id="section-schedules">
+    <div class="section-header">
+      <h2>Control de Horarios y Permisos</h2>
+      <div class="schedule-week-nav">
+        <button class="btn btn-ghost btn-icon btn-sm" id="weekPrev">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <span id="weekLabel">Semana actual</span>
+        <button class="btn btn-ghost btn-icon btn-sm" id="weekNext">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="schedules-grid" id="schedulesGrid"></div>
+
+    <div class="section-header" style="margin-top:2rem;">
+      <h2>Tabla Semanal de Asistencia</h2>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table attendance-table" id="attendanceTable">
+        <thead id="attendanceHead"></thead>
+        <tbody id="attendanceBody"></tbody>
+      </table>
+    </div>
+
+    <div class="section-header" style="margin-top:2rem;">
+      <h2>Permisos Especiales</h2>
+    </div>
+    <div class="permissions-list" id="permissionsList"></div>
+  </section>
+
+  <!-- ═══ SECTION: PRODUCTIVITY ═══ -->
+  <section class="section" id="section-productivity">
+    <div class="section-header">
+      <h2>Métricas de Productividad — Google Sheets</h2>
+      <div class="gs-status" id="gsStatus">
+        <span class="status-dot status-loading"></span>
+        <span id="gsStatusText">Cargando datos...</span>
+      </div>
+    </div>
+
+    <div class="productivity-charts">
+      <div class="chart-card chart-wide">
+        <div class="chart-header">
+          <h3>Evolución de Contactos por Voluntario</h3>
+          <span class="chart-sub">Datos desde Google Sheets</span>
+        </div>
+        <div class="chart-wrap chart-tall"><canvas id="chartTimeline"></canvas></div>
+      </div>
+    </div>
+
+    <div class="section-header" style="margin-top:2rem;"><h2>Resumen por Voluntario</h2></div>
+    <div class="table-wrap">
+      <table class="data-table" id="productivityTable">
+        <thead>
+          <tr>
+            <th>Voluntario</th>
+            <th>Total Contactos</th>
+            <th>Promedio Diario</th>
+            <th>Meta Diaria</th>
+            <th>Meta Semanal</th>
+            <th>Cumplimiento</th>
+            <th>Tendencia</th>
+          </tr>
+        </thead>
+        <tbody id="productivityBody"></tbody>
+      </table>
+    </div>
+
+    <div class="gs-attribution">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <span>Datos sincronizados desde Google Sheets (solo lectura) — 
+        <a href="https://docs.google.com/spreadsheets/d/1R1wxzm9EmdnzYDwHNS4JIqI3hqyjjtGo-iJnoV1HaCM/edit?gid=1048433770" target="_blank" rel="noopener">Ver hoja de cálculo</a>
+      </span>
+    </div>
+  </section>
+
+</main>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="/adicional/js/app.js"></script>
+</body>
+</html>

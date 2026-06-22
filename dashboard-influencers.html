@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reto 300 · Dashboard de Captación · Sembrando Perú</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+/* ============================= TOKENS ============================= */
+:root{
+--bg: #f5f2eb; /* Beige claro */
+  --bg-grad: radial-gradient(1200px 600px at 90% -10%, #e2ebd5 0%, transparent 60%),
+             radial-gradient(900px 500px at -10% 10%, #ebdcc9 0%, transparent 55%),
+             #f5f2eb; /* Mezcla sutil de verde y marrón claro */
+  --surface: #edf0ea; /* Verde/beige muy claro */
+  --surface-2: #d2ded1; /* Verde claro apagado */
+  --surface-hover: #c1d1bf; /* Verde claro un poco más intenso */
+  --border: rgba(120, 130, 110, 0.15); /* Borde marrón/verde sutil */
+  --border-strong: rgba(90, 100, 80, 0.25); /* Borde más marcado */
+  --text: #2f3630; /* Marrón/verde muy oscuro para contraste */
+  --text-dim: #59635a; /* Marrón/verde medio */
+  --text-faint: #838f84; /* Verde grisáceo claro */
+  --leaf: #72b07e; /* Verde hoja claro */
+  --leaf-deep: #4d8058; /* Verde un poco más seco */
+  --gold: #d4a35d; /* Beige oscuro / Ocre claro */
+  --coral: #e07d67; /* Rojizo / Coral claro */
+  --sky: #8cb6cc; /* (Se mantuvo claro) */
+  --lavender: #c2add6; /* (Se mantuvo claro) */
+  --otros: #a1b0a3; /* Verde salvia claro */
+  --radius-s:10px;
+  --radius-m:16px;
+  --radius-l:22px;
+  --font-display:'Fraunces',serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'IBM Plex Mono',monospace;
+  --shadow-card: 0 1px 0 rgba(255,255,255,.03) inset, 0 12px 30px -16px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--bg-grad);
+  color:var(--text);
+  font-family:var(--font-body);
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+h1,h2,h3{font-family:var(--font-display);margin:0;letter-spacing:-.01em;}
+p{margin:0;}
+::selection{background:var(--leaf);color:#0c130f;}
+a{color:var(--leaf);}
+:focus-visible{outline:2px solid var(--leaf);outline-offset:2px;border-radius:6px;}
+
+.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;}
+
+/* ============================= LAYOUT ============================= */
+.wrap{max-width:1280px;margin:0 auto;padding:0 24px 80px;}
+.eyebrow{
+  font-family:var(--font-mono);
+  font-size:11px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--leaf);
+  display:flex;align-items:center;gap:8px;
+}
+.eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--leaf);box-shadow:0 0 0 3px rgba(126,209,136,.18);}
+
+/* ----- top bar ----- */
+.topbar{
+  position:sticky;top:0;z-index:40;
+  backdrop-filter:blur(14px) saturate(140%);
+  background:rgba(179, 224, 199, 0.78);
+  border-bottom:1px solid var(--border);
+}
+.topbar-inner{
+  max-width:1280px;margin:0 auto;padding:16px 24px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+}
+.brand{display:flex;flex-direction:column;gap:3px;}
+.brand h1{font-size:20px;font-weight:700;}
+.brand .sub{font-size:12.5px;color:var(--text-faint);}
+.actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.sync-info{font-family:var(--font-mono);font-size:11px;color:var(--text-faint);text-align:right;line-height:1.4;}
+.sync-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--leaf);margin-right:5px;box-shadow:0 0 0 3px rgba(126,209,136,.15);}
+
+.btn{
+  font-family:var(--font-body);font-weight:600;font-size:13.5px;
+  border-radius:999px;border:1px solid var(--border-strong);
+  padding:10px 18px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--surface-2);color:var(--text);
+  transition:transform .15s ease, background .15s ease, border-color .15s ease;
+}
+.btn:hover{background:var(--surface-hover);transform:translateY(-1px);}
+.btn:active{transform:translateY(0);}
+.btn:disabled{opacity:.55;cursor:wait;transform:none;}
+.btn-primary{background:linear-gradient(135deg,var(--leaf),#5bb868);color:#0c1810;border-color:transparent;}
+.btn-primary:hover{filter:brightness(1.06);background:linear-gradient(135deg,var(--leaf),#5bb868);}
+.btn-ghost{background:transparent;}
+.btn .spin{width:14px;height:14px;border-radius:50%;border:2px solid currentColor;border-top-color:transparent;animation:spin .7s linear infinite;display:none;}
+.btn.is-loading .spin{display:inline-block;}
+.btn.is-loading .btn-label{opacity:.75;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ----- section heading ----- */
+.section{margin-top:56px;}
+.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px;}
+.section-head h2{font-size:24px;font-weight:700;}
+.section-head .desc{color:var(--text-faint);font-size:13px;margin-top:4px;max-width:560px;}
+
+/* ============================= HERO ============================= */
+.hero{
+  margin-top:34px;
+  display:grid;grid-template-columns:300px 1fr;gap:20px;
+}
+.ring-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-l);
+  padding:26px;box-shadow:var(--shadow-card);
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;
+  position:relative;overflow:hidden;
+}
+.ring-card::before{
+  content:'';position:absolute;inset:-40% -40% auto auto;width:220px;height:220px;
+  background:radial-gradient(circle,rgba(126,209,136,.16),transparent 70%);
+}
+.ring-wrap{position:relative;width:176px;height:176px;margin:6px 0 10px;}
+.ring-wrap svg{transform:rotate(-90deg);}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ring-pct{font-family:var(--font-display);font-size:34px;font-weight:700;line-height:1;}
+.ring-label{font-size:10.5px;color:var(--text-faint);margin-top:5px;letter-spacing:.04em;}
+.ring-foot{font-size:12.5px;color:var(--text-dim);}
+.ring-foot b{color:var(--text);font-family:var(--font-mono);}
+.ring-foot small{display:block;color:var(--text-faint);margin-top:3px;font-size:11px;}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;}
+.kpi-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-m);
+  padding:18px 18px 16px;box-shadow:var(--shadow-card);
+  display:flex;flex-direction:column;gap:8px;justify-content:space-between;
+  transition:border-color .15s ease, transform .15s ease;
+}
+.kpi-card:hover{border-color:var(--border-strong);transform:translateY(-2px);}
+.kpi-card .label{font-size:11.5px;color:var(--text-faint);letter-spacing:.03em;}
+.kpi-card .value{font-family:var(--font-display);font-size:28px;font-weight:700;}
+.kpi-card .value small{font-family:var(--font-body);font-size:13px;color:var(--text-faint);font-weight:500;}
+.kpi-card .trend{font-size:11.5px;color:var(--text-dim);display:flex;align-items:center;gap:5px;}
+.kpi-card .trend.up{color:var(--leaf);}
+.kpi-card .trend.down{color:var(--coral);}
+.kpi-icon{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;background:var(--surface-2);}
+
+/* ============================= CARDS GENERIC ============================= */
+.card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-l);
+  padding:22px;box-shadow:var(--shadow-card);
+}
+
+/* ============================= RANKING ============================= */
+.ranking-list{display:flex;flex-direction:column;gap:10px;}
+.rank-row{
+  display:grid;grid-template-columns:34px 40px 1.6fr 1fr 1fr;align-items:center;gap:14px;
+  padding:13px 16px;border-radius:var(--radius-s);background:var(--surface-2);border:1px solid transparent;
+  transition:border-color .15s ease, background .15s ease;
+}
+.rank-row:hover{border-color:var(--border-strong);background:var(--surface-hover);}
+.rank-row.is-otros{opacity:.75;border-style:dashed;border-color:var(--border-strong);}
+.rank-pos{font-family:var(--font-mono);font-size:13px;color:var(--text-faint);}
+.rank-pos.is-1{color:var(--gold);font-weight:700;}
+.avatar{
+  width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:700;font-size:14px;color:#0c1810;flex-shrink:0;
+}
+.rank-name{display:flex;flex-direction:column;gap:1px;min-width:0;}
+.rank-name b{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rank-name span{font-size:11.5px;color:var(--text-faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rank-metric{text-align:right;}
+.rank-metric .v{font-family:var(--font-mono);font-size:16px;font-weight:600;}
+.rank-metric .l{font-size:10.5px;color:var(--text-faint);}
+.rank-bar-wrap{grid-column:1/-1;height:6px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden;margin-top:2px;}
+.rank-bar{height:100%;border-radius:99px;transition:width .5s ease;}
+
+/* ============================= TABS / TABLES ============================= */
+.tabs{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:2px;}
+.tab-btn{
+  font-family:var(--font-body);font-weight:600;font-size:13px;white-space:nowrap;
+  padding:9px 16px;border-radius:999px;border:1px solid var(--border);background:transparent;color:var(--text-dim);cursor:pointer;
+}
+.tab-btn.is-active{background:var(--surface-2);color:var(--text);border-color:var(--border-strong);}
+.tab-panel{display:none;}
+.tab-panel.is-active{display:block;}
+
+.table-scroll{overflow-x:auto;border-radius:var(--radius-m);border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;min-width:560px;}
+thead th{
+  text-align:left;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-faint);
+  padding:13px 16px;background:var(--surface-2);border-bottom:1px solid var(--border);
+}
+tbody td{padding:13px 16px;font-size:13.5px;border-bottom:1px solid var(--border);}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr.is-otros td{color:var(--text-faint);font-style:italic;}
+tbody tr.is-team td{font-weight:700;background:var(--surface-2);border-top:1px solid var(--border-strong);}
+td.num-cell{font-family:var(--font-mono);}
+.status-pill{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;
+  font-family:var(--font-mono);font-size:12px;font-weight:600;
+}
+.status-pill::before{content:'';width:6px;height:6px;border-radius:50%;}
+.status-green{background:rgba(126,209,136,.14);color:var(--leaf);}
+.status-green::before{background:var(--leaf);}
+.status-gold{background:rgba(232,184,75,.14);color:var(--gold);}
+.status-gold::before{background:var(--gold);}
+.status-coral{background:rgba(232,113,79,.14);color:var(--coral);}
+.status-coral::before{background:var(--coral);}
+
+.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-size:12px;color:var(--text-faint);}
+.legend span{display:inline-flex;align-items:center;gap:6px;}
+.legend i{width:8px;height:8px;border-radius:50%;display:inline-block;}
+
+/* ============================= CHARTS ============================= */
+.charts-grid{display:grid;grid-template-columns:1fr;gap:20px;}
+.charts-grid.two{grid-template-columns:1fr 1fr;}
+.chart-card .chart-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.chart-card h3{font-size:15.5px;font-weight:700;}
+.chart-card .chart-sub{font-size:12px;color:var(--text-faint);margin-top:3px;}
+.chart-box{position:relative;height:300px;}
+.chart-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-faint);font-size:13px;text-align:center;padding:20px;}
+
+/* ============================= MONTHLY REPORT ============================= */
+.report-card{
+  background:linear-gradient(160deg,var(--surface-2),var(--surface));
+  border:1px solid var(--border);border-radius:var(--radius-l);padding:28px;box-shadow:var(--shadow-card);
+}
+.report-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:22px;}
+.report-top h2{font-size:22px;}
+.report-months{font-family:var(--font-mono);font-size:12px;color:var(--text-faint);background:var(--surface);border:1px solid var(--border);padding:8px 14px;border-radius:999px;}
+.report-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;}
+.report-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-m);padding:18px;}
+.report-stat .label{font-size:11.5px;color:var(--text-faint);margin-bottom:8px;}
+.report-stat .value{font-family:var(--font-display);font-size:24px;font-weight:700;}
+.report-stat .value.delta-up{color:var(--leaf);}
+.report-stat .value.delta-down{color:var(--coral);}
+.report-stat .sub{font-size:12px;color:var(--text-dim);margin-top:6px;}
+
+/* ============================= TOAST / LOADER ============================= */
+#toast-stack{position:fixed;right:18px;bottom:18px;z-index:100;display:flex;flex-direction:column;gap:10px;}
+.toast{
+  font-size:13px;padding:13px 18px;border-radius:12px;background:var(--surface-2);
+  border:1px solid var(--border-strong);box-shadow:0 14px 30px -10px rgba(0,0,0,.6);
+  display:flex;align-items:center;gap:10px;max-width:340px;
+  animation:toast-in .25s ease;
+}
+.toast.success{border-color:rgba(126,209,136,.4);}
+.toast.error{border-color:rgba(232,113,79,.4);}
+.toast i{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--leaf);}
+.toast.error i{background:var(--coral);}
+@keyframes toast-in{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+#loader-overlay{
+  position:fixed;inset:0;background:var(--bg);z-index:200;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  transition:opacity .35s ease, visibility .35s ease;
+}
+#loader-overlay.is-hidden{opacity:0;visibility:hidden;pointer-events:none;}
+.loader-ring{width:46px;height:46px;border-radius:50%;border:3px solid var(--border-strong);border-top-color:var(--leaf);animation:spin .8s linear infinite;}
+#loader-overlay p{color:var(--text-faint);font-size:13px;font-family:var(--font-mono);}
+
+.empty-state{
+  text-align:center;padding:60px 20px;color:var(--text-faint);
+}
+.empty-state h3{color:var(--text);font-size:18px;margin-bottom:8px;}
+.empty-state p{font-size:13px;max-width:420px;margin:0 auto 18px;line-height:1.6;}
+
+footer{margin-top:70px;padding-top:24px;border-top:1px solid var(--border);color:var(--text-faint);font-size:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+
+/* ============================= RESPONSIVE ============================= */
+@media (max-width:920px){
+  .hero{grid-template-columns:1fr;}
+  .charts-grid.two{grid-template-columns:1fr;}
+  .rank-row{grid-template-columns:26px 34px 1.4fr 1fr;}
+  .rank-row .rank-metric.hide-sm{display:none;}
+}
+@media (max-width:620px){
+  .wrap{padding:0 16px 60px;}
+  .topbar-inner{padding:14px 16px;}
+  .brand h1{font-size:17px;}
+  .section{margin-top:42px;}
+  .section-head h2{font-size:20px;}
+  .report-card{padding:20px;}
+  .actions{width:100%;justify-content:space-between;}
+  .sync-info{display:none;}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001s !important;transition-duration:.001s !important;}
+  html{scroll-behavior:auto;}
+}
+</style>
+</head>
+<body>
+
+<div id="loader-overlay">
+  <div class="loader-ring"></div>
+  <p id="loader-text">Conectando con la hoja de cálculo…</p>
+</div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="eyebrow">Sembrando Perú · Reto 300</span>
+      <h1>Captación de Influencers</h1>
+    </div>
+    <div class="actions">
+      <span class="sync-info"><span class="sync-dot"></span><span id="sync-text">Sin sincronizar</span></span>
+      <button class="btn btn-ghost" id="btn-export" title="Genera un PDF con las métricas y gráficos del mes">
+        <span class="btn-label">Exportar informe</span>
+        <span class="spin"></span>
+      </button>
+      <button class="btn btn-primary" id="btn-refresh">
+        <span class="btn-label">↻ Actualizar datos</span>
+        <span class="spin"></span>
+      </button>
+      <button class="btn btn-ghost" id="btn-source" title="Voluntarios" onclick="window.location.href='/adicional/html/voluntarios.html'">
+          <span class="btn-label">Voluntarios</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ===================== HERO ===================== -->
+  <section class="hero" id="section-hero">
+    <div class="ring-card">
+      <span class="eyebrow">Meta semanal del equipo</span>
+      <div class="ring-wrap">
+        <svg width="176" height="176" viewBox="0 0 176 176">
+          <defs>
+            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#7ed188"/>
+              <stop offset="100%" stop-color="#e8b84b"/>
+            </linearGradient>
+          </defs>
+          <circle cx="88" cy="88" r="76" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="14"/>
+          <circle id="ring-progress" cx="88" cy="88" r="76" fill="none" stroke="url(#ringGrad)" stroke-width="14" stroke-linecap="round" stroke-dasharray="477.5" stroke-dashoffset="477.5" style="transition:stroke-dashoffset .7s cubic-bezier(.4,0,.2,1);"/>
+        </svg>
+        <div class="ring-center">
+          <span class="ring-pct num" id="ring-pct">0%</span>
+          <span class="ring-label">DE 2 000 CONTACTOS</span>
+        </div>
+      </div>
+      <p class="ring-foot"><b class="num" id="ring-current">0</b> contactos esta semana
+        <small id="ring-remaining">Calculando avance del equipo…</small>
+      </p>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon">☀️</div>
+        <div>
+          <div class="label">Contactos hoy</div>
+          <div class="value num" id="kpi-today">0</div>
+        </div>
+        <div class="trend" id="kpi-today-trend">Meta diaria equipo: 400</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">📅</div>
+        <div>
+          <div class="label">Contactos esta semana</div>
+          <div class="value num" id="kpi-week">0</div>
+        </div>
+        <div class="trend" id="kpi-week-trend">Meta semanal equipo: 2 000</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">🗓️</div>
+        <div>
+          <div class="label">Contactos este mes</div>
+          <div class="value num" id="kpi-month">0</div>
+        </div>
+        <div class="trend" id="kpi-month-trend">Meta mensual equipo: 8 000</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">🌱</div>
+        <div>
+          <div class="label">Alcance potencial total</div>
+          <div class="value num" id="kpi-reach">0</div>
+        </div>
+        <div class="trend">Suma de seguidores contactados</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon">📈</div>
+        <div>
+          <div class="label">Promedio diario / voluntario</div>
+          <div class="value num" id="kpi-avg">0</div>
+        </div>
+        <div class="trend">Sobre días con actividad</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== RANKING ===================== -->
+  <section class="section" id="section-ranking">
+    <div class="section-head">
+      <div>
+        <h2>Ranking de voluntarios</h2>
+        <p class="desc">Ordenado por contactos del mes en curso. Incluye avance vs. la meta semanal individual (400).</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ranking-list" id="ranking-list"></div>
+    </div>
+  </section>
+
+  <!-- ===================== CHART: contactos por voluntario ===================== -->
+  <section class="section" id="section-chart-vol">
+    <div class="charts-grid">
+      <div class="card chart-card">
+        <div class="chart-head">
+          <div>
+            <h3>Contactos por voluntario</h3>
+            <p class="chart-sub" id="chart-vol-sub">Mes en curso</p>
+          </div>
+        </div>
+        <div class="chart-box"><canvas id="canvas-volunteers"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== TABLES ===================== -->
+  <section class="section" id="section-tables">
+    <div class="section-head">
+      <div>
+        <h2>Estado de metas</h2>
+        <p class="desc">Cumplimiento individual frente a las metas diaria (80), semanal (400) y mensual estimada (1 600 = 4 × meta semanal).</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="tabs">
+        <button class="tab-btn is-active" data-tab="diario">Estado diario</button>
+        <button class="tab-btn" data-tab="semanal">Estado semanal</button>
+        <button class="tab-btn" data-tab="mensual">Estado mensual</button>
+      </div>
+
+      <div class="tab-panel is-active" data-panel="diario">
+        <div class="table-scroll"><table>
+          <thead><tr><th>Voluntario</th><th>Contactos</th><th>Meta</th><th>Cumplimiento</th></tr></thead>
+          <tbody id="tbody-diario"></tbody>
+        </table></div>
+      </div>
+      <div class="tab-panel" data-panel="semanal">
+        <div class="table-scroll"><table>
+          <thead><tr><th>Voluntario</th><th>Contactos</th><th>Meta</th><th>Cumplimiento</th></tr></thead>
+          <tbody id="tbody-semanal"></tbody>
+        </table></div>
+      </div>
+      <div class="tab-panel" data-panel="mensual">
+        <div class="table-scroll"><table>
+          <thead><tr><th>Voluntario</th><th>Contactos</th><th>Meta</th><th>Cumplimiento</th></tr></thead>
+          <tbody id="tbody-mensual"></tbody>
+        </table></div>
+      </div>
+
+      <div class="legend">
+        <span><i style="background:var(--leaf)"></i>Meta cumplida (≥100%)</span>
+        <span><i style="background:var(--gold)"></i>Cerca de la meta (≥70%)</span>
+        <span><i style="background:var(--coral)"></i>Debajo de la meta (&lt;70%)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== CHARTS: evolucion + ultimas 4 semanas ===================== -->
+  <section class="section" id="section-charts-2">
+    <div class="section-head">
+      <div>
+        <h2>Tendencias del equipo</h2>
+        <p class="desc">Evolución semanal del mes en curso y comparación de las últimas cuatro semanas por voluntario.</p>
+      </div>
+    </div>
+    <div class="charts-grid two">
+      <div class="card chart-card">
+        <div class="chart-head">
+          <div><h3>Evolución semanal del mes</h3><p class="chart-sub">Total del equipo oficial (5 voluntarios) vs. meta semanal</p></div>
+        </div>
+        <div class="chart-box"><canvas id="canvas-evolution"></canvas></div>
+      </div>
+      <div class="card chart-card">
+        <div class="chart-head">
+          <div><h3>Comparación últimas 4 semanas</h3><p class="chart-sub">Contactos por voluntario, semana a semana</p></div>
+        </div>
+        <div class="chart-box"><canvas id="canvas-last4"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== MONTHLY REPORT ===================== -->
+  <section class="section" id="section-report">
+    <div class="report-card">
+      <div class="report-top">
+        <div>
+          <span class="eyebrow">Informe automático</span>
+          <h2 style="margin-top:8px;">Mes actual vs. mes anterior</h2>
+        </div>
+        <span class="report-months" id="report-months">— vs —</span>
+      </div>
+      <div class="report-grid">
+        <div class="report-stat">
+          <div class="label">Total de contactos (mes actual)</div>
+          <div class="value num" id="rep-total-current">0</div>
+        </div>
+        <div class="report-stat">
+          <div class="label">Variación vs. mes anterior</div>
+          <div class="value num" id="rep-variacion">0%</div>
+          <div class="sub" id="rep-variacion-sub">Mes anterior: 0</div>
+        </div>
+        <div class="report-stat">
+          <div class="label">Mejor voluntario del mes</div>
+          <div class="value" id="rep-best" style="font-size:18px;">—</div>
+          <div class="sub" id="rep-best-sub">—</div>
+        </div>
+        <div class="report-stat">
+          <div class="label">Mayor crecimiento</div>
+          <div class="value" id="rep-growth" style="font-size:18px;">—</div>
+          <div class="sub" id="rep-growth-sub">—</div>
+        </div>
+        <div class="report-stat">
+          <div class="label">Alcance potencial del mes</div>
+          <div class="value num" id="rep-reach">0</div>
+          <div class="sub">Suma de seguidores, mes en curso</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Datos en vivo desde Google Sheets · Sembrando Perú</span>
+    <span id="footer-count">0 registros cargados</span>
+  </footer>
+</main>
+
+<div id="toast-stack"></div>
+
+<script>
+'use strict';
+
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const SHEET_ID = '1bG1Qf2gEQe9Q2YqfjW_Qih3ueZ5J9z4QK_V0eWPqAWs';
+const GVIZ_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&headers=1&_=` + Date.now();
+
+const VOLUNTEERS = [
+  { email:'msanjinez@sembrandoperu.org', nombre:'Maricielo Sanjinez', cargo:'E.Fundraising', color:'#7ed188' },
+  { email:'acardenas@sembrandoperu.org', nombre:'Angelí Cardenas', cargo:'I.Ambiental', color:'#e8b84b' },
+  { email:'aavalos@sembrandoperu.org',  nombre:'Anyelí Avalos',          cargo:'I.Ambiental', color:'#e8714f' },
+  { email:'ftoledo@sembrandoperu.org',  nombre:'Francisco Toledo',       cargo:'I.Ambiental',  color:'#74b6d6' },
+  { email:'amorales@sembrandoperu.org', nombre:'Angie Morales',  cargo:'I.Ambiental', color:'#bb95e6' },
+];
+const OTROS_COLOR = '#8a9a8c';
+
+const DAILY_GOAL = 80;
+const WEEKLY_GOAL = 400;
+const TEAM_WEEKLY_GOAL = 2000;          // = 5 voluntarios x 400
+const MONTHLY_GOAL_IND = WEEKLY_GOAL * 4;     // asunción: 4 semanas / mes -> 1600
+const TEAM_DAILY_GOAL = DAILY_GOAL * VOLUNTEERS.length;   // 400, estimado
+const TEAM_MONTHLY_GOAL = TEAM_WEEKLY_GOAL * 4;           // 8000, estimado
+
+let RECORDS = [];
+let STATE = null;
+let charts = { volunteers:null, evolution:null, last4:null };
+
+/* ============================================================
+   UTILIDADES DE FECHA / NÚMERO
+   ============================================================ */
+const pad = n => String(n).padStart(2,'0');
+const toDayKey   = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const toMonthKey = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+function weekStart(d){
+  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const day = x.getDay();
+  const diff = (day === 0 ? -6 : 1 - day);
+  x.setDate(x.getDate()+diff);
+  return x;
+}
+const toWeekKey = d => toDayKey(weekStart(d));
+const isSameDay   = (d,ref) => toDayKey(d) === toDayKey(ref);
+const isSameWeek  = (d,ref) => toWeekKey(d) === toWeekKey(ref);
+const isSameMonth = (d,ref) => toMonthKey(d) === toMonthKey(ref);
+function monthLabel(d){ const s = d.toLocaleDateString('es-PE',{month:'long',year:'numeric'}); return s.charAt(0).toUpperCase()+s.slice(1); }
+function formatWeekRange(weekKeyStr){
+  const start = new Date(weekKeyStr+'T00:00:00');
+  const end = new Date(start); end.setDate(end.getDate()+6);
+  const f = d => `${pad(d.getDate())}/${pad(d.getMonth()+1)}`;
+  return `${f(start)}–${f(end)}`;
+}
+const fmtNum = n => Math.round(n||0).toLocaleString('es-PE');
+const fmtAvg = n => (n||0).toLocaleString('es-PE',{maximumFractionDigits:1, minimumFractionDigits: (n%1!==0?1:0)});
+
+/* ============================================================
+   PARSEO DE LA HOJA
+   ============================================================ */
+function parseFollowers(raw){
+  if(raw === null || raw === undefined || raw === '') return 0;
+  let str = String(raw).trim().toLowerCase();
+  if(str === '' || str === 'no presenta') return 0;
+  str = str.replace(/\s+/g,'');
+  let value = 0;
+  if(str.includes('mil')){
+    value = parseFloat(str.replace('mil','').replace(',','.')) * 1000;
+  } else if(/\d+m$/.test(str) || str.includes('m')){
+    value = parseFloat(str.replace(/m/g,'').replace(',','.')) * 1000000;
+  } else {
+    value = parseFloat(str.replace(',','.'));
+  }
+  return isNaN(value) ? 0 : Math.round(value);
+}
+
+function parseDMY(text){
+  if(!text) return null;
+  const clean = String(text).trim().replace(',', ' ');
+  const parts = clean.split(/\s+/);
+  const datePart = parts[0];
+  const timePart = parts[1];
+  const dmy = datePart.split('/').map(p=>parseInt(p,10));
+  if(dmy.length < 3 || dmy.some(isNaN)) return null;
+  let [d,m,y] = dmy;
+  if(y < 100) y += 2000;
+  let hh=0,mm=0,ss=0;
+  if(timePart){
+    const t = timePart.split(':').map(p=>parseInt(p,10));
+    hh = t[0]||0; mm = t[1]||0; ss = t[2]||0;
+  }
+  const dt = new Date(y, m-1, d, hh, mm, ss);
+  return isNaN(dt.getTime()) ? null : dt;
+}
+
+function parseCellDate(cell){
+  if(!cell) return null;
+  const text = cell.f != null ? cell.f : cell.v;
+  if(text == null) return null;
+  if(typeof text === 'string' && text.startsWith('Date(')){
+    const m = text.match(/Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)/);
+    if(m) return new Date(+m[1], +m[2], +m[3], +(m[4]||0), +(m[5]||0), +(m[6]||0));
+  }
+  return parseDMY(String(text));
+}
+
+function findCol(cols, includesArr, excludesArr=[]){
+  for(let i=0;i<cols.length;i++){
+    const label = (cols[i].label || '').toLowerCase();
+    if(includesArr.every(s=>label.includes(s)) && !excludesArr.some(s=>label.includes(s))) return i;
+  }
+  return -1;
+}
+
+async function fetchSheetTable(){
+  const res = await fetch(GVIZ_URL, { cache:'no-store' });
+  if(!res.ok) throw new Error('Error HTTP ' + res.status);
+  const text = await res.text();
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if(start === -1 || end === -1) throw new Error('Respuesta inesperada de Google Sheets.');
+  const data = JSON.parse(text.substring(start, end+1));
+  if(data.status === 'error'){
+    const msg = (data.errors && data.errors[0] && data.errors[0].detailed_message) || 'La hoja no está disponible públicamente.';
+    throw new Error(msg);
+  }
+  return data.table;
+}
+
+function normalizeRecords(table){
+  const cols = table.cols || [];
+  const idxFecha    = findCol(cols, ['fecha'], ['registro']);
+  const idxFechaReg  = findCol(cols, ['registro']);
+  const idxVoluntario = findCol(cols, ['voluntario']);
+  const idxSeguidores = findCol(cols, ['seguidor']);
+  const idxContacto  = findCol(cols, ['contacto'], ['correo']);
+  const idxUsuarioIg = findCol(cols, ['usuario']);
+
+  const dateColIdx = idxFecha !== -1 ? idxFecha : (idxFechaReg !== -1 ? idxFechaReg : 0);
+  const volColIdx  = idxVoluntario !== -1 ? idxVoluntario : 3;
+  const segColIdx  = idxSeguidores !== -1 ? idxSeguidores : 8;
+  const contactColIdx = idxContacto !== -1 ? idxContacto : 4;
+  const igColIdx   = idxUsuarioIg !== -1 ? idxUsuarioIg : 2;
+
+  const records = [];
+  (table.rows || []).forEach(row => {
+    const c = row.c || [];
+    let date = c[dateColIdx] ? parseCellDate(c[dateColIdx]) : null;
+    if(!date && idxFechaReg !== -1 && idxFechaReg !== dateColIdx){
+      date = c[idxFechaReg] ? parseCellDate(c[idxFechaReg]) : null;
+    }
+    if(!date) return;
+    const emailCell = c[volColIdx];
+    const email = emailCell ? String(emailCell.v != null ? emailCell.v : (emailCell.f || '')).trim().toLowerCase() : '';
+    if(!email) return;
+    const segCell = c[segColIdx];
+    const followers = segCell ? parseFollowers(segCell.f != null ? segCell.f : segCell.v) : 0;
+    const contactCell = c[contactColIdx];
+    const contactName = contactCell ? String(contactCell.v || '') : '';
+    const igCell = c[igColIdx];
+    const igUser = igCell ? String(igCell.v || '') : '';
+    records.push({
+      date, dayKey: toDayKey(date), weekKey: toWeekKey(date), monthKey: toMonthKey(date),
+      email, followers, contactName, igUser
+    });
+  });
+  return records;
+}
+
+/* ============================================================
+   AGREGACIONES
+   ============================================================ */
+function computeDashboard(records, now){
+  const byVol = {};
+  VOLUNTEERS.forEach(v => { byVol[v.email] = { ...v, records: [] }; });
+  const otrosRecords = [];
+
+  records.forEach(r => {
+    if(byVol[r.email]) byVol[r.email].records.push(r);
+    else otrosRecords.push(r);
+  });
+
+  function statsFor(list){
+    const today = list.filter(r=>isSameDay(r.date, now)).length;
+    const week  = list.filter(r=>isSameWeek(r.date, now)).length;
+    const month = list.filter(r=>isSameMonth(r.date, now)).length;
+    const total = list.length;
+    const reach = list.reduce((s,r)=>s+r.followers,0);
+    const activeDays = new Set(list.map(r=>r.dayKey)).size;
+    const avgDaily = activeDays ? total/activeDays : 0;
+    return { today, week, month, total, reach, activeDays, avgDaily };
+  }
+
+  const officialBuckets = VOLUNTEERS.map(v => {
+    const b = byVol[v.email];
+    b.stats = statsFor(b.records);
+    return b;
+  });
+
+  const otrosBucket = otrosRecords.length ? { email:'otros', nombre:'Otros / sin asignar', cargo:'No registrado en el equipo', color: OTROS_COLOR, records: otrosRecords, stats: statsFor(otrosRecords) } : null;
+  const allBuckets = otrosBucket ? [...officialBuckets, otrosBucket] : officialBuckets.slice();
+
+  const teamToday = officialBuckets.reduce((s,b)=>s+b.stats.today,0);
+  const teamWeek  = officialBuckets.reduce((s,b)=>s+b.stats.week,0);
+  const teamMonth = officialBuckets.reduce((s,b)=>s+b.stats.month,0);
+
+  const orgToday = records.filter(r=>isSameDay(r.date, now)).length;
+  const orgWeek  = records.filter(r=>isSameWeek(r.date, now)).length;
+  const orgMonth = records.filter(r=>isSameMonth(r.date, now)).length;
+  const orgReach = records.reduce((s,r)=>s+r.followers,0);
+
+  const activeVolToday = officialBuckets.filter(b=>b.stats.activeDays>0).length || 1;
+  const avgDailyTeam = officialBuckets.reduce((s,b)=>s+b.stats.avgDaily,0) / activeVolToday;
+
+  // mes actual vs anterior
+  const prevMonthDate = new Date(now.getFullYear(), now.getMonth()-1, 1);
+  const monthCountFor = (list, ref) => list.filter(r=>isSameMonth(r.date, ref)).length;
+
+  const currentMonthByVol = officialBuckets.map(b => ({ b, monthCount: monthCountFor(b.records, now) }));
+  const prevMonthByVol    = officialBuckets.map(b => ({ b, monthCount: monthCountFor(b.records, prevMonthDate) }));
+
+  const totalCurrentMonth = currentMonthByVol.reduce((s,x)=>s+x.monthCount,0);
+  const totalPrevMonth    = prevMonthByVol.reduce((s,x)=>s+x.monthCount,0);
+  const variacionPct = totalPrevMonth === 0 ? (totalCurrentMonth > 0 ? 100 : 0) : ((totalCurrentMonth-totalPrevMonth)/totalPrevMonth*100);
+
+  let bestVolunteer = null;
+  currentMonthByVol.forEach(x => { if(!bestVolunteer || x.monthCount > bestVolunteer.monthCount) bestVolunteer = { ...x.b, monthCount:x.monthCount }; });
+
+  let mostGrowth = null;
+  officialBuckets.forEach(b => {
+    const cur = monthCountFor(b.records, now);
+    const prev = monthCountFor(b.records, prevMonthDate);
+    const delta = cur - prev;
+    if(!mostGrowth || delta > mostGrowth.delta) mostGrowth = { ...b, delta, cur, prev };
+  });
+
+  const reachCurrentMonth = records.filter(r=>isSameMonth(r.date, now)).reduce((s,r)=>s+r.followers,0);
+
+  return {
+    officialBuckets, otrosBucket, allBuckets,
+    teamToday, teamWeek, teamMonth,
+    orgToday, orgWeek, orgMonth, orgReach, avgDailyTeam,
+    monthly: {
+      currentLabel: monthLabel(now), prevLabel: monthLabel(prevMonthDate),
+      totalCurrentMonth, totalPrevMonth, variacionPct, bestVolunteer, mostGrowth, reachCurrentMonth
+    }
+  };
+}
+
+function computeWeeklyEvolution(officialBuckets, now){
+  const monthRecords = [];
+  officialBuckets.forEach(b => b.records.forEach(r => { if(isSameMonth(r.date, now)) monthRecords.push(r); }));
+  const weeksMap = new Map();
+  monthRecords.forEach(r => {
+    if(!weeksMap.has(r.weekKey)) weeksMap.set(r.weekKey, 0);
+    weeksMap.set(r.weekKey, weeksMap.get(r.weekKey)+1);
+  });
+  const weeks = Array.from(weeksMap.entries()).sort((a,b)=>a[0].localeCompare(b[0]))
+    .map(([weekKey,count],i) => ({ weekKey, count, label:'Semana '+(i+1), range: formatWeekRange(weekKey) }));
+  return weeks;
+}
+
+function computeLast4Weeks(allBuckets, now){
+  const curStart = weekStart(now);
+  const weekKeys = [];
+  for(let i=3;i>=0;i--){ const d=new Date(curStart); d.setDate(d.getDate()-7*i); weekKeys.push(toDayKey(d)); }
+  const buckets = weekKeys.map((wk,i)=>({ weekKey:wk, label:'Sem. '+(i+1), range: formatWeekRange(wk) }));
+  allBuckets.forEach(vol => {
+    buckets.forEach((b,i) => {
+      b[vol.email] = vol.records.filter(r=>r.weekKey===weekKeys[i]).length;
+    });
+  });
+  return buckets;
+}
+
+/* ============================================================
+   RENDER: HERO
+   ============================================================ */
+const RING_CIRCUMFERENCE = 2*Math.PI*76;
+
+function renderHero(state){
+  const pct = Math.min(100, Math.round(state.teamWeek/TEAM_WEEKLY_GOAL*100));
+  const offset = RING_CIRCUMFERENCE * (1 - Math.min(1, state.teamWeek/TEAM_WEEKLY_GOAL));
+  document.getElementById('ring-progress').setAttribute('stroke-dasharray', RING_CIRCUMFERENCE.toFixed(1));
+  document.getElementById('ring-progress').setAttribute('stroke-dashoffset', offset.toFixed(1));
+  document.getElementById('ring-pct').textContent = pct + '%';
+  document.getElementById('ring-current').textContent = fmtNum(state.teamWeek);
+  const remaining = Math.max(0, TEAM_WEEKLY_GOAL - state.teamWeek);
+  document.getElementById('ring-remaining').textContent = remaining === 0
+    ? 'Meta semanal del equipo alcanzada 🎉'
+    : `Faltan ${fmtNum(remaining)} contactos para la meta`;
+
+  document.getElementById('kpi-today').textContent = fmtNum(state.orgToday);
+  document.getElementById('kpi-week').textContent  = fmtNum(state.orgWeek);
+  document.getElementById('kpi-month').textContent = fmtNum(state.orgMonth);
+  document.getElementById('kpi-reach').textContent = fmtNum(state.orgReach);
+  document.getElementById('kpi-avg').textContent   = fmtAvg(state.avgDailyTeam);
+
+  document.getElementById('kpi-today-trend').textContent = `Equipo oficial: ${fmtNum(state.teamToday)} / ${TEAM_DAILY_GOAL} (estimado)`;
+  document.getElementById('kpi-week-trend').textContent  = `Equipo oficial: ${fmtNum(state.teamWeek)} / ${fmtNum(TEAM_WEEKLY_GOAL)}`;
+  document.getElementById('kpi-month-trend').textContent = `Equipo oficial: ${fmtNum(state.teamMonth)} / ${fmtNum(TEAM_MONTHLY_GOAL)} (estimado)`;
+}
+
+/* ============================================================
+   RENDER: RANKING
+   ============================================================ */
+function initials(name){
+  const parts = name.trim().split(/\s+/);
+  return ((parts[0]?.[0]||'') + (parts[1]?.[0]||'')).toUpperCase();
+}
+
+function renderRanking(state){
+  const list = state.officialBuckets.slice().sort((a,b)=>b.stats.month - a.stats.month);
+  const rows = list.map((b,i) => {
+    const pctWeek = Math.min(999, Math.round(b.stats.week/WEEKLY_GOAL*100));
+    return `
+    <div class="rank-row">
+      <span class="rank-pos ${i===0?'is-1':''}">#${i+1}</span>
+      <span class="avatar" style="background:${b.color}">${initials(b.nombre)}</span>
+      <div class="rank-name"><b>${b.nombre}</b><span>${b.cargo}</span></div>
+      <div class="rank-metric"><div class="v num">${fmtNum(b.stats.month)}</div><div class="l">este mes</div></div>
+      <div class="rank-metric hide-sm"><div class="v num">${pctWeek}%</div><div class="l">meta semanal</div></div>
+      <div class="rank-bar-wrap"><div class="rank-bar" style="width:${Math.min(100,pctWeek)}%;background:${b.color}"></div></div>
+    </div>`;
+  }).join('');
+
+  let otrosRow = '';
+  if(state.otrosBucket){
+    const o = state.otrosBucket;
+    otrosRow = `
+    <div class="rank-row is-otros">
+      <span class="rank-pos">—</span>
+      <span class="avatar" style="background:${o.color}">${initials('Otros')}</span>
+      <div class="rank-name"><b>${o.nombre}</b><span>${o.cargo}</span></div>
+      <div class="rank-metric"><div class="v num">${fmtNum(o.stats.month)}</div><div class="l">este mes</div></div>
+      <div class="rank-metric hide-sm"><div class="v num">—</div><div class="l">no aplica meta</div></div>
+      <div class="rank-bar-wrap"><div class="rank-bar" style="width:0%;background:${o.color}"></div></div>
+    </div>`;
+  }
+
+  document.getElementById('ranking-list').innerHTML = rows + otrosRow;
+  document.getElementById('chart-vol-sub').textContent = monthLabel(new Date());
+}
+
+/* ============================================================
+   RENDER: TABLAS DE ESTADO
+   ============================================================ */
+function statusClass(pct){
+  if(pct >= 100) return 'status-green';
+  if(pct >= 70) return 'status-gold';
+  return 'status-coral';
+}
+function statusLabel(pct){
+  if(pct >= 100) return 'Meta cumplida';
+  if(pct >= 70) return 'Cerca de la meta';
+  return 'Debajo de la meta';
+}
+
+function renderStatusTable(tbodyId, buckets, key, goal, teamTotal, teamGoal, teamLabel){
+  const rows = buckets.map(b => {
+    const val = b.stats[key];
+    const pct = goal ? Math.round(val/goal*100) : 0;
+    return `<tr>
+      <td>${b.nombre}</td>
+      <td class="num-cell">${fmtNum(val)}</td>
+      <td class="num-cell">${fmtNum(goal)}</td>
+      <td><span class="status-pill ${statusClass(pct)}">${pct}% · ${statusLabel(pct)}</span></td>
+    </tr>`;
+  }).join('');
+  const teamPct = teamGoal ? Math.round(teamTotal/teamGoal*100) : 0;
+  const teamRow = `<tr class="is-team">
+      <td>${teamLabel}</td>
+      <td class="num-cell">${fmtNum(teamTotal)}</td>
+      <td class="num-cell">${fmtNum(teamGoal)}</td>
+      <td><span class="status-pill ${statusClass(teamPct)}">${teamPct}% · ${statusLabel(teamPct)}</span></td>
+    </tr>`;
+  document.getElementById(tbodyId).innerHTML = rows + teamRow;
+}
+
+function renderTables(state){
+  renderStatusTable('tbody-diario',  state.officialBuckets, 'today', DAILY_GOAL,   state.teamToday, TEAM_DAILY_GOAL,   'Equipo (total)');
+  renderStatusTable('tbody-semanal', state.officialBuckets, 'week',  WEEKLY_GOAL,  state.teamWeek,  TEAM_WEEKLY_GOAL,  'Equipo (total)');
+  renderStatusTable('tbody-mensual', state.officialBuckets, 'month', MONTHLY_GOAL_IND, state.teamMonth, TEAM_MONTHLY_GOAL, 'Equipo (total)');
+}
+
+/* ============================================================
+   RENDER: CHARTS
+   ============================================================ */
+function baseChartOptions(extra){
+  Chart.defaults.font.family = "'Inter', sans-serif";
+  Chart.defaults.color = '#aab9ad';
+  return Object.assign({
+    responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{ labels:{ usePointStyle:true, boxWidth:8, padding:14 } } },
+    scales:{
+      x:{ grid:{ color:'rgba(255,255,255,.05)' }, ticks:{ font:{size:11} } },
+      y:{ grid:{ color:'rgba(255,255,255,.05)' }, ticks:{ font:{size:11} }, beginAtZero:true }
+    }
+  }, extra||{});
+}
+
+function renderChartVolunteers(state){
+  const ctx = document.getElementById('canvas-volunteers');
+  const labels = state.officialBuckets.map(b=>b.nombre.split(' ').slice(0,2).join(' '));
+  const data = state.officialBuckets.map(b=>b.stats.month);
+  const colors = state.officialBuckets.map(b=>{
+    const pct = b.stats.month/MONTHLY_GOAL_IND*100;
+    return pct>=100 ? '#7ed188' : pct>=70 ? '#e8b84b' : '#e8714f';
+  });
+  if(charts.volunteers) charts.volunteers.destroy();
+  charts.volunteers = new Chart(ctx, {
+    type:'bar',
+    data:{ labels, datasets:[{ label:'Contactos (mes actual)', data, backgroundColor:colors, borderRadius:8, maxBarThickness:54 }] },
+    options: baseChartOptions({ plugins:{ legend:{ display:false } } })
+  });
+}
+
+function renderChartEvolution(weeks){
+  const ctx = document.getElementById('canvas-evolution');
+  const labels = weeks.map(w=>w.label);
+  const data = weeks.map(w=>w.count);
+  if(charts.evolution) charts.evolution.destroy();
+  charts.evolution = new Chart(ctx, {
+    type:'line',
+    data:{ labels, datasets:[
+      { label:'Contactos del equipo', data, borderColor:'#7ed188', backgroundColor:'rgba(126,209,136,.18)', fill:true, tension:.35, pointBackgroundColor:'#7ed188', pointRadius:4 },
+      { label:'Meta semanal (2 000)', data: weeks.map(()=>TEAM_WEEKLY_GOAL), borderColor:'#e8b84b', borderDash:[6,5], pointRadius:0, fill:false }
+    ]},
+    options: baseChartOptions({})
+  });
+}
+
+function renderChartLast4(buckets4, allBuckets){
+  const ctx = document.getElementById('canvas-last4');
+  const labels = buckets4.map(b=>`${b.label}\n${b.range}`);
+  const datasets = allBuckets.map(v => ({
+    label: v.nombre.split(' ')[0],
+    data: buckets4.map(b=>b[v.email]||0),
+    backgroundColor: v.color,
+    borderRadius:6, maxBarThickness:34
+  }));
+  if(charts.last4) charts.last4.destroy();
+  charts.last4 = new Chart(ctx, {
+    type:'bar',
+    data:{ labels, datasets },
+    options: baseChartOptions({ scales:{ x:{ stacked:true, grid:{display:false} }, y:{ stacked:true, beginAtZero:true, grid:{color:'rgba(255,255,255,.05)'} } } })
+  });
+}
+
+/* ============================================================
+   RENDER: INFORME MENSUAL
+   ============================================================ */
+function renderMonthlyReport(state){
+  const m = state.monthly;
+  document.getElementById('report-months').textContent = `${m.currentLabel} vs ${m.prevLabel}`;
+  document.getElementById('rep-total-current').textContent = fmtNum(m.totalCurrentMonth);
+
+  const variEl = document.getElementById('rep-variacion');
+  const sign = m.variacionPct >= 0 ? '+' : '';
+  variEl.textContent = sign + m.variacionPct.toFixed(1) + '%';
+  variEl.className = 'value num ' + (m.variacionPct >= 0 ? 'delta-up' : 'delta-down');
+  document.getElementById('rep-variacion-sub').textContent = m.totalPrevMonth === 0
+    ? 'Sin datos del mes anterior para comparar'
+    : `Mes anterior: ${fmtNum(m.totalPrevMonth)} contactos`;
+
+  if(m.bestVolunteer){
+    document.getElementById('rep-best').textContent = m.bestVolunteer.nombre;
+    document.getElementById('rep-best-sub').textContent = `${fmtNum(m.bestVolunteer.monthCount)} contactos este mes`;
+  } else {
+    document.getElementById('rep-best').textContent = '—';
+    document.getElementById('rep-best-sub').textContent = 'Sin registros este mes';
+  }
+
+  if(m.mostGrowth){
+    document.getElementById('rep-growth').textContent = m.mostGrowth.nombre;
+    const d = m.mostGrowth.delta;
+    document.getElementById('rep-growth-sub').textContent = `${d>=0?'+':''}${fmtNum(d)} vs. mes anterior (${fmtNum(m.mostGrowth.prev)} → ${fmtNum(m.mostGrowth.cur)})`;
+  }
+
+  document.getElementById('rep-reach').textContent = fmtNum(m.reachCurrentMonth);
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('is-active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    document.querySelector(`.tab-panel[data-panel="${btn.dataset.tab}"]`).classList.add('is-active');
+  });
+});
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+function toast(message, type='success'){
+  const stack = document.getElementById('toast-stack');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = `<i></i><span>${message}</span>`;
+  stack.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateY(8px)'; el.style.transition='all .3s ease'; setTimeout(()=>el.remove(),300); }, 4200);
+}
+
+/* ============================================================
+   CARGA PRINCIPAL
+   ============================================================ */
+async function loadData(isManual){
+  const btn = document.getElementById('btn-refresh');
+  btn.disabled = true; btn.classList.add('is-loading');
+  if(isManual) document.getElementById('loader-text').textContent = 'Actualizando datos…';
+
+  try{
+    const table = await fetchSheetTable();
+    const records = normalizeRecords(table);
+    if(records.length === 0) throw new Error('La hoja respondió correctamente pero no se encontraron filas con fecha y voluntario válidos.');
+
+    RECORDS = records;
+    const now = new Date();
+    STATE = computeDashboard(RECORDS, now);
+    const weeklyEvolution = computeWeeklyEvolution(STATE.officialBuckets, now);
+    const last4 = computeLast4Weeks(STATE.allBuckets, now);
+
+    renderHero(STATE);
+    renderRanking(STATE);
+    renderChartVolunteers(STATE);
+    renderTables(STATE);
+    renderChartEvolution(weeklyEvolution);
+    renderChartLast4(last4, STATE.allBuckets);
+    renderMonthlyReport(STATE);
+
+    document.getElementById('footer-count').textContent = `${fmtNum(RECORDS.length)} registros cargados`;
+    document.getElementById('sync-text').textContent = 'Actualizado ' + now.toLocaleTimeString('es-PE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+    if(isManual) toast(`Datos actualizados — ${fmtNum(RECORDS.length)} registros`, 'success');
+  }catch(err){
+    console.error(err);
+    toast('No se pudieron cargar los datos: ' + err.message, 'error');
+    if(RECORDS.length === 0){
+      document.querySelector('.wrap').insertAdjacentHTML('afterbegin', `
+        <div class="empty-state">
+          <h3>No se pudo conectar con Google Sheets</h3>
+          <p>Verifica que la hoja esté compartida como <b>"Cualquier persona con el enlace puede ver"</b> y vuelve a intentarlo. Detalle: ${err.message}</p>
+          <button class="btn btn-primary" onclick="document.getElementById('btn-refresh').click()">Reintentar</button>
+        </div>`);
+    }
+  }finally{
+    btn.disabled = false; btn.classList.remove('is-loading');
+    document.getElementById('loader-overlay').classList.add('is-hidden');
+  }
+}
+
+document.getElementById('btn-refresh').addEventListener('click', () => loadData(true));
+
+/* ============================================================
+   EXPORTAR INFORME PDF
+   ============================================================ */
+function capitalize(s){ return s ? s.charAt(0).toUpperCase()+s.slice(1) : s; }
+
+function drawPdfTable(doc, startY, headers, rows, marginX, pageW){
+  let y = startY;
+  const pageH = doc.internal.pageSize.getHeight();
+  const tableW = pageW - marginX*2;
+  const colW = tableW/headers.length;
+  doc.setFontSize(9);
+  function drawHeader(){
+    doc.setFillColor(230,230,222);
+    doc.rect(marginX, y-4, tableW, 6.5, 'F');
+    doc.setTextColor(30,40,32); doc.setFont('helvetica','bold');
+    headers.forEach((h,i)=> doc.text(String(h), marginX+colW*i+2, y));
+    y += 6.5;
+    doc.setFont('helvetica','normal');
+  }
+  drawHeader();
+  rows.forEach((row,ri) => {
+    if(y > pageH-16){ doc.addPage(); y = 20; drawHeader(); }
+    if(ri%2===1){ doc.setFillColor(244,244,238); doc.rect(marginX, y-4, tableW, 6.5, 'F'); }
+    doc.setTextColor(35,42,37);
+    row.forEach((cell,i)=> doc.text(String(cell), marginX+colW*i+2, y));
+    y += 6.5;
+  });
+  return y + 4;
+}
+
+async function exportarInforme(){
+  if(!STATE){ toast('Primero carga los datos del equipo', 'error'); return; }
+  const btn = document.getElementById('btn-export');
+  btn.disabled = true; btn.classList.add('is-loading');
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:'mm', format:'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+    const marginX = 16;
+    let y = 20;
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.setTextColor(20,30,24);
+    doc.text('Informe Mensual — Reto 300', marginX, y); y += 7;
+    doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(110,120,112);
+    doc.text('Sembrando Perú · Captación de Influencers', marginX, y); y += 5;
+    doc.text('Generado el ' + new Date().toLocaleString('es-PE'), marginX, y); y += 10;
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(13); doc.setTextColor(20,30,24);
+    doc.text(`Resumen: ${STATE.monthly.currentLabel} vs ${STATE.monthly.prevLabel}`, marginX, y); y += 8;
+
+    const summaryRows = [
+      ['Total de contactos (mes actual)', fmtNum(STATE.monthly.totalCurrentMonth)],
+      ['Total de contactos (mes anterior)', fmtNum(STATE.monthly.totalPrevMonth)],
+      ['Variación porcentual', (STATE.monthly.variacionPct>=0?'+':'') + STATE.monthly.variacionPct.toFixed(1) + '%'],
+      ['Mejor voluntario (mes actual)', STATE.monthly.bestVolunteer ? `${STATE.monthly.bestVolunteer.nombre} (${fmtNum(STATE.monthly.bestVolunteer.monthCount)})` : '—'],
+      ['Mayor crecimiento vs. mes anterior', STATE.monthly.mostGrowth ? `${STATE.monthly.mostGrowth.nombre} (${STATE.monthly.mostGrowth.delta>=0?'+':''}${fmtNum(STATE.monthly.mostGrowth.delta)})` : '—'],
+      ['Alcance potencial (mes actual)', fmtNum(STATE.monthly.reachCurrentMonth) + ' seguidores'],
+    ];
+    doc.setFontSize(10.5);
+    summaryRows.forEach(([label,value]) => {
+      doc.setTextColor(110,120,112); doc.setFont('helvetica','normal'); doc.text(label, marginX, y);
+      doc.setTextColor(20,30,24); doc.setFont('helvetica','bold'); doc.text(String(value), pageW-marginX, y, { align:'right' });
+      y += 6.4;
+    });
+    y += 4;
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(20,30,24);
+    doc.text('Ranking de voluntarios (mes actual)', marginX, y); y += 6;
+    y = drawPdfTable(doc, y, ['Voluntario','Cargo','Mes','Semana','Hoy','% Meta semanal'],
+      STATE.officialBuckets.slice().sort((a,b)=>b.stats.month-a.stats.month).map(b => [
+        b.nombre, b.cargo, fmtNum(b.stats.month), fmtNum(b.stats.week), fmtNum(b.stats.today),
+        Math.round(b.stats.week/WEEKLY_GOAL*100) + '%'
+      ]), marginX, pageW);
+    y += 6;
+
+    const statusSections = [
+      ['Estado diario', DAILY_GOAL, 'today', TEAM_DAILY_GOAL, STATE.teamToday],
+      ['Estado semanal', WEEKLY_GOAL, 'week', TEAM_WEEKLY_GOAL, STATE.teamWeek],
+      ['Estado mensual', MONTHLY_GOAL_IND, 'month', TEAM_MONTHLY_GOAL, STATE.teamMonth],
+    ];
+    statusSections.forEach(([title, goal, key, teamGoal, teamTotal]) => {
+      if(y > pageH-50){ doc.addPage(); y = 20; }
+      doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(20,30,24);
+      doc.text(title, marginX, y); y += 6;
+      const rows = STATE.officialBuckets.map(b => {
+        const val = b.stats[key]; const pct = Math.round(val/goal*100);
+        return [b.nombre, fmtNum(val), fmtNum(goal), pct+'%'];
+      });
+      rows.push(['Equipo (total)', fmtNum(teamTotal), fmtNum(teamGoal), Math.round(teamTotal/teamGoal*100)+'%']);
+      y = drawPdfTable(doc, y, ['Voluntario','Contactos','Meta','Cumplimiento'], rows, marginX, pageW);
+      y += 6;
+    });
+
+    const chartList = [
+      [charts.volunteers, 'Contactos por voluntario (mes actual)'],
+      [charts.evolution, 'Evolución semanal del mes'],
+      [charts.last4, 'Comparación últimas 4 semanas'],
+    ];
+    chartList.forEach(([chart, title]) => {
+      if(!chart) return;
+      if(y > pageH-95){ doc.addPage(); y = 20; }
+      doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(20,30,24);
+      doc.text(title, marginX, y); y += 6;
+      const img = chart.toBase64Image('image/png', 1.0);
+      const imgW = pageW - marginX*2;
+      const ratio = chart.canvas.height / chart.canvas.width;
+      const imgH = imgW * ratio;
+      doc.addImage(img, 'PNG', marginX, y, imgW, imgH);
+      y += imgH + 10;
+    });
+
+    doc.save(`Informe_Reto300_${toMonthKey(new Date())}.pdf`);
+    toast('Informe exportado correctamente', 'success');
+  }catch(err){
+    console.error(err);
+    toast('No se pudo generar el PDF: ' + err.message, 'error');
+  }finally{
+    btn.disabled = false; btn.classList.remove('is-loading');
+  }
+}
+
+document.getElementById('btn-export').addEventListener('click', exportarInforme);
+
+/* ============================================================
+   INIT
+   ============================================================ */
+loadData(false);
+</script>
+</body>
+</html>
